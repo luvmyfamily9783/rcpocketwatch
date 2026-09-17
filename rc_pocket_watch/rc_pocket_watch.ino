@@ -15,22 +15,25 @@ void setup() {
 }
 
 void loop() {
+  static int bits_received = 0;
+
   // Process only if the timer is triggered and new data is ready
   if (serial_timer.TRIGGERED && WWVB_hasNewData()) {
     unsigned long width, period;
     int bit;
     WWVB_getPulseData(width, period, bit);
 
-    // Print pulse information to serial
-    Serial.print("Pulse = "); Serial.print(width / 1000.0); Serial.print(" ms");
-    if (period > 0) {
-      Serial.print("   Period = "); Serial.print(period / 1000.0); Serial.print(" ms");
-    }
-    Serial.print("   -> ");
+    // Concise output: print just the bit type
+    if (bit == BIT_0) Serial.print("0 ");
+    else if (bit == BIT_1) Serial.print("1 ");
+    else if (bit == MARKER) Serial.print("M ");
+
+    bits_received++;
     
-    // Print decoded bit type
-    if (bit == BIT_0) Serial.println("0");
-    else if (bit == BIT_1) Serial.println("1");
-    else if (bit == MARKER) Serial.println("MARKER");
+    // Add periodic summary output
+    if (bits_received % 10 == 0) {
+      Serial.print(" | Bits received: ");
+      Serial.println(bits_received);
+    }
   }
 }
